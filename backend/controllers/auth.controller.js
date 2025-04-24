@@ -110,7 +110,13 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  res.json({
-    data: "You hit the logout endpoint",
-  });
+  try {
+    //set the jwt cookie to empty and max age to 0
+    res.cookie("jwt", "", { maxAge: 0 });
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.log("Error in login controller", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
