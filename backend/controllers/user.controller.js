@@ -92,3 +92,41 @@ export const followUnfollowUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    // First exclude the current user from the suggestion
+    const userId = req.user._id;
+
+    // Exclude the users that we already follow, by getting the following array
+    const usersFollowedByMe = await User.findById(userId).select("following");
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: userId },
+        },
+      },
+      {
+        //get 10 different users but not the authenticated user
+        $sample: { size: 10 },
+      },
+    ]);
+
+    // return users as long as their id isnt the same as the id of the followed ones
+    const filteredUsers = users.filter(
+      (user) => !usersFollowedByMe.following.includes(user._id)
+    );
+
+    //get 4 suggested users since some of them will be followed
+    const suggestedUsers = filteredUsers.slice(0, 4);
+
+    //for each suggested user the password should be null
+    suggestedUsers.forEach((user) => (user.password = null));
+
+    res.status(200).json(suggestedUsers);
+  } catch (error) {
+    console.log("Error in getSuggestedUsers", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
