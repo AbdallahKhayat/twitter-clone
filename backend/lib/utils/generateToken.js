@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 // we getting res cause we set a cookie and send it back to client
 export const generateTokenAndSetCookie = (userId, res) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expires_in: "15d",
+    expiresIn: "15d",
   });
 
   // we have the token now we will send it as a cookie to client
