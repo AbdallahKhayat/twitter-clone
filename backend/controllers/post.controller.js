@@ -183,3 +183,30 @@ export const getLikedPosts = async (req, res) => {
     console.log("Error in getLikedPosts controller", error);
   }
 };
+
+export const getFollowingPosts = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+    }
+    const following = user.following;
+    const followingPosts = await Post.find({
+      user: { $in: following },
+    })
+      .sort({ createdAt: -1 })
+      .populate({ path: "user", select: "-password" })
+      .populate({
+        path: "comments.user",
+        select: "-password",
+      });
+
+    res.status(200).json(followingPosts);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+    console.log("Error in getFollowingPosts controller", error);
+  }
+};
