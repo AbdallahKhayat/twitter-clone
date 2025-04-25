@@ -127,3 +127,30 @@ export const likeUnlikePost = async (req, res) => {
     console.log("Error in likeUnlikePost controller", error);
   }
 };
+
+export const getAllPosts = async (req, res) => {
+  try {
+    // we use populate to get the user information like username email, profile img ,id ... instead of id alone
+
+    //we will populate user and discord password and also populate user in the comments (comments.user) so we can see user infos
+
+    const posts = await Post.find()
+      .sort({ createdAt: -1 }) // the latest post will come at top
+      .populate({
+        path: "user",
+        select: "-password",
+      })
+      .populate({
+        path: "comments.user",
+        select: "-password",
+      });
+
+    if (posts.length === 0) {
+      res.status(200).json([]);
+    }
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+    console.log("Error in getAllPosts controller", error);
+  }
+};
