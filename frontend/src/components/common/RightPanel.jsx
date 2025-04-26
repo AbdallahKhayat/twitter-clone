@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
 import { useQuery } from "@tanstack/react-query";
+
+import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
+import useFollow from "../../hooks/useFollow";
+import LoadingSpinner from "./LoadingSpinner";
 
 const RightPanel = () => {
   const { data: suggestedUsers, isLoading } = useQuery({
@@ -22,6 +25,7 @@ const RightPanel = () => {
     },
   });
 
+  const { followUser, isPending } = useFollow();
   // to prevent the RightPanel from stretching so the home page doesnt get moved to the right
   if (suggestedUsers?.length === 0) return <div className="md:w-64 w-0"></div>;
 
@@ -64,9 +68,12 @@ const RightPanel = () => {
                 <div>
                   <button
                     className="btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm"
-                    onClick={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      followUser(user._id);
+                    }}
                   >
-                    Follow
+                    {isPending ? <LoadingSpinner size="sm" /> : "Follow"}
                   </button>
                 </div>
               </Link>
