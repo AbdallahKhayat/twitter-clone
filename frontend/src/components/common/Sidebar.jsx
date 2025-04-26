@@ -5,8 +5,41 @@ import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const Sidebar = () => {
+  const queryClient = useQueryClient();
+
+  const { mutate: logoutMutation } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/auth/logout", {
+          method: "POST",
+        });
+
+        const data = res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to logout");
+        }
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
+    onSuccess: async () => {
+      toast.success("Logged out successfully");
+
+      // Invalidate and remove authUser from cache
+      queryClient.setQueryData(["authUser"], null);
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
+    onError: async () => {
+      toast.error("Logout failed");
+    },
+  });
+
   const data = {
     fullName: "John Doe",
     username: "johndoe",
@@ -66,7 +99,13 @@ const Sidebar = () => {
                 </p>
                 <p className="text-slate-500 text-sm">@{data?.username}</p>
               </div>
-              <BiLogOut className="w-5 h-5 cursor-pointer" />
+              <BiLogOut
+                onClick={(e) => {
+                  e.preventDefault();
+                  logoutMutation();
+                }}
+                className="w-5 h-5 cursor-pointer"
+              />
             </div>
           </Link>
         )}
