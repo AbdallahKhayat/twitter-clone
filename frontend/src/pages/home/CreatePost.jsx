@@ -46,14 +46,14 @@ const CreatePost = () => {
       }
     },
     onSuccess: async () => {
+      setText("");
+      setImg(null);
       toast.success("Post created successfully");
       queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
   const handleSubmit = (e) => {
-    setText("");
-    setImg(null);
     e.preventDefault();
     createPost({ text, img });
   };
@@ -80,10 +80,10 @@ const CreatePost = () => {
         <textarea
           className="textarea w-full p-0 text-lg resize-none border-none focus:outline-none  border-gray-800"
           placeholder="What is happening?!"
-          value={createPost.text}
+          value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        {createPost.img && (
+        {img && (
           <div className="relative w-72 mx-auto">
             <IoCloseSharp
               className="absolute top-0 right-0 text-white bg-gray-800 rounded-full w-5 h-5 cursor-pointer"
@@ -93,7 +93,7 @@ const CreatePost = () => {
               }}
             />
             <img
-              src={createPost.img}
+              src={img}
               className="w-full mx-auto h-72 object-contain rounded"
             />
           </div>
