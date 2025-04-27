@@ -23,6 +23,16 @@ cloudinary.config({
 const app = express();
 
 const PORT = process.env.PORT || 5000;
+
+const __dirname = path.resolve();
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+  app.get("/{*any}", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  });
+}
+
 // to limit images sizes but shouldnt be too high to prevent DOS
 app.use(express.json({ limit: "5mb" })); // to parse req.body
 app.use(express.urlencoded({ extended: true })); // to parse form data(urlencoded)
