@@ -1,7 +1,6 @@
-import { QueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
 
 const EditProfileModal = ({ authUser }) => {
   const [formData, setFormData] = useState({
@@ -18,45 +17,11 @@ const EditProfileModal = ({ authUser }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const queryClient = new QueryClient();
-
-  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-    mutationFn: async () => {
-      try {
-        const res = await fetch("/api/users/update", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to update profile");
-        }
-
-        return data;
-      } catch (error) {
-        throw new Error(error);
-      }
-    },
-    onSuccess: () => {
-      toast.success("Profile updated successfully");
-
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["authUser"] }),
-        queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { updateProfile, isUpdatingProfile } = useUpdateUserProfile();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateProfile();
+    updateProfile(formData);
   };
 
   useEffect(() => {
@@ -86,10 +51,7 @@ const EditProfileModal = ({ authUser }) => {
       <dialog id="edit_profile_modal" className="modal">
         <div className="modal-box border rounded-md border-gray-700 shadow-md">
           <h3 className="font-bold text-lg my-3">Update Profile</h3>
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={(e) => handleSubmit(e)}
-          >
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex flex-wrap gap-2">
               <input
                 type="text"

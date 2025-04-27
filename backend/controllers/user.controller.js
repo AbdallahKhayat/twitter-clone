@@ -205,7 +205,7 @@ export const updateUser = async (req, res) => {
 
     // if value passed then update in database else keep the old value
     user.fullName = fullName || user.fullName;
-    user.email = email || email;
+    user.email = email || user.email;
     user.username = username || user.username;
     user.bio = bio || user.bio;
     user.link = link || user.link;
