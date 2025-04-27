@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import XSvg from "../../../components/svgs/X";
 
@@ -14,7 +14,7 @@ const LoginPage = () => {
   });
 
   const queryClient = useQueryClient();
-  const navigate = useNavigate(); // Add this
+
   const {
     mutate: loginMutation,
     isError,
@@ -49,7 +49,6 @@ const LoginPage = () => {
       toast.success("Logged in successfully");
       //refetch the authUser query to be able to navigate
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
-      navigate("/");
     },
   });
 
