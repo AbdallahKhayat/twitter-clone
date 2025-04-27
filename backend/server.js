@@ -10,6 +10,7 @@ import connectMongoDB from "./db/connectMongoDB.js";
 import cookieParser from "cookie-parser";
 
 import { v2 as cloudinary } from "cloudinary";
+import path from "path";
 
 dotenv.config();
 
