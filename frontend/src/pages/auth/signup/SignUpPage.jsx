@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import XSvg from "../../../components/svgs/X";
@@ -19,6 +19,8 @@ const SignUpPage = () => {
   });
 
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate(); // Add this
 
   // we use this when we want to create,update, delete data
   const { mutate, isError, IsPending, error } = useMutation({
@@ -55,6 +57,7 @@ const SignUpPage = () => {
       toast.success("Account created successfully");
 
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      navigate("/");
     },
   });
 
