@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { QueryClient, useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
-const EditProfileModal = () => {
+const EditProfileModal = ({ authUser }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -14,6 +17,61 @@ const EditProfileModal = () => {
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const queryClient = new QueryClient();
+
+  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/users/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to update profile");
+        }
+
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Profile updated successfully");
+
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["authUser"] }),
+        queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    updateProfile();
+  };
+
+  useEffect(() => {
+    if (authUser) {
+      setFormData({
+        fullName: authUser.fullName,
+        username: authUser.username,
+        email: authUser.email,
+        bio: authUser.bio,
+        link: authUser.link,
+        newPassword: "",
+        currentPassword: "",
+      });
+    }
+  }, [authUser]);
 
   return (
     <>
@@ -30,10 +88,7 @@ const EditProfileModal = () => {
           <h3 className="font-bold text-lg my-3">Update Profile</h3>
           <form
             className="flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Profile updated successfully");
-            }}
+            onSubmit={(e) => handleSubmit(e)}
           >
             <div className="flex flex-wrap gap-2">
               <input
@@ -97,7 +152,7 @@ const EditProfileModal = () => {
               onChange={handleInputChange}
             />
             <button className="btn btn-primary rounded-full btn-sm text-white">
-              Update
+              {isUpdatingProfile ? <LoadingSpinner size="sm" /> : "Update"}
             </button>
           </form>
         </div>
