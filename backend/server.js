@@ -10,7 +10,6 @@ import connectMongoDB from "./db/connectMongoDB.js";
 import cookieParser from "cookie-parser";
 
 import { v2 as cloudinary } from "cloudinary";
-import { fileURLToPath } from "url";
 import path from "path";
 
 dotenv.config();
@@ -26,16 +25,7 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-  app.get("/*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-  });
-}
+const __dirname = path.resolve();
 
 // to limit images sizes but shouldnt be too high to prevent DOS
 app.use(express.json({ limit: "5mb" })); // to parse req.body
@@ -47,6 +37,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/notifications", notificationRoutes);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  });
+}
 
 app.listen(PORT, () => {
   console.log("Listening to Port: " + PORT);
