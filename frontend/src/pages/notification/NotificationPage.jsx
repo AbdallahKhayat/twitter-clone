@@ -4,33 +4,79 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+import toast from "react-hot-toast";
 const NotificationPage = () => {
-  const isLoading = false;
-  const notifications = [
-    {
-      _id: "1",
-      from: {
-        _id: "1",
-        username: "johndoe",
-        profileImg: "/avatars/boy2.png",
-      },
-      type: "follow",
-    },
-    {
-      _id: "2",
-      from: {
-        _id: "2",
-        username: "janedoe",
-        profileImg: "/avatars/girl1.png",
-      },
-      type: "like",
-    },
-  ];
+  // const notifications = [
+  //   {
+  //     _id: "1",
+  //     from: {
+  //       _id: "1",
+  //       username: "johndoe",
+  //       profileImg: "/avatars/boy2.png",
+  //     },
+  //     type: "follow",
+  //   },
+  //   {
+  //     _id: "2",
+  //     from: {
+  //       _id: "2",
+  //       username: "janedoe",
+  //       profileImg: "/avatars/girl1.png",
+  //     },
+  //     type: "like",
+  //   },
+  // ];
 
-  const deleteNotifications = () => {
-    alert("All notifications deleted");
-  };
+  const { data: notifications, isLoading } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/notifications");
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to fetch notifications");
+        }
+
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+  });
+
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteNotifications } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/notifications", {
+          method: "DELETE",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to delete notifications");
+        }
+
+        // for deletion methods we only return the data if we want to use onSuccess like what we did in Post.jsx
+        //we pass it as an arguemt to onSuccess()
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Notifications deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
 
   return (
     <>
